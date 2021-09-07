@@ -22,7 +22,7 @@ Current implementation uses lazy initialisation, so the init-time is **O(sqrt(u)
 github.com/chucnorrisful/vEB
 ```
 
-See test/main.go for examples.
+See [test/main.go](test/main.go) for examples.
 
 ## Todos:
 
