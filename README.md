@@ -18,9 +18,9 @@ Current implementation uses lazy initialisation, so the init-time is **O(sqrt(u)
 
 ## Usage:
 
-'''
+```
 github.com/chucnorrisful/vEB
-'''
+```
 
 See test/main.go for examples.
 
