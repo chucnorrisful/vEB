@@ -1,5 +1,5 @@
 # vEB
-Go implementation of the van Emde Boas tree data structure: Priority queue for positive whole numbers.
+Go implementation of the van Emde Boas tree data structure: Priority queue for positive whole numbers in O(log log u) time.
 
 ## Supports the following Priority-Queue operations:
 
@@ -15,6 +15,14 @@ All operations run in **O(log log u)** time with u being a large integer provide
 Space requirement of the (fully filled with all u elements) tree is O(u), as well as initialisation time.
 
 Current implementation uses lazy initialisation, so the init-time is **O(sqrt(u))**, and Insert may run slower until all of the substructures of the tree were used at least once. I might add a switch to toggle both modes at some point in the future.
+
+## Usage:
+
+```
+github.com/chucnorrisful/vEB
+```
+
+See [test/main.go](test/main.go) for examples.
 
 ## Todos:
 
