@@ -44,8 +44,7 @@ func InitVEB(uSize int) PrioQ {
 // todo: preload mode as init parameter to enable fast inserting.
 func (v *VEB) Insert(x int) {
 	if v.min == -1 {
-		v.min = x
-		v.max = x
+		v.min, v.max = x, x
 		return
 	}
 
@@ -142,7 +141,8 @@ func (v *VEB) Succ(x int) int {
 		if x == 0 && v.max == 1 {
 			return 1
 		} else {
-			return 0
+			//todo: check if at recursive call a detection is necessary
+			return -1
 		}
 	}
 
