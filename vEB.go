@@ -54,6 +54,10 @@ func (v *VEB) Insert(x int) {
 		x = v.swap
 	}
 
+	if x > v.max {
+		v.max = x
+	}
+
 	if v.u > 2 {
 		i := v.high(x)
 		//lazy init
@@ -68,16 +72,15 @@ func (v *VEB) Insert(x int) {
 			v.local[i].Insert(v.low(x))
 		}
 	}
-
-	if x > v.max {
-		v.max = x
-	}
 }
 func (v *VEB) Delete(x int) {
 	//deleting the only element left
 	if v.min == v.max {
-		v.min = -1
-		v.max = -1
+		//only delete, if element is present in tree
+		if v.min == x {
+			v.min = -1
+			v.max = -1
+		}
 		return
 	}
 
