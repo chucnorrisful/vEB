@@ -16,7 +16,7 @@ type VEB struct {
 	swap int	//helper
 }
 
-func newVEB(uSize int) *VEB {
+func newVEB(uSize int, fullInit bool) *VEB {
 	veb := &VEB{}
 	veb.u = uSize
 	veb.m = 1 << int(math.Floor(math.Log2(math.Sqrt(float64(veb.u)))))
@@ -24,16 +24,23 @@ func newVEB(uSize int) *VEB {
 	veb.min, veb.max = -1, -1
 	veb.local = make([]*VEB, veb.m)
 	veb.global = make([]bool, veb.m)
+
+	if fullInit && veb.u > 2 {
+		for i := range veb.local {
+			veb.local[i] = newVEB(veb.q, fullInit)
+		}
+	}
+
 	return veb
 }
 
 // InitVEB inits a new van Emde Boas tree with universe size uSize.
 // uSize limits the maximum allowed whole numbers which are insertable to [0, uSize)
 // currently, negative numbers are not supported
-func InitVEB(uSize int) PrioQ {
+func InitVEB(uSize int, fullInit bool) PrioQ {
 	//calculate the smallest larger power of 2 to the given universe size
 	u := int(math.Exp2(math.Ceil(math.Log2(float64(uSize)))))
-	var v PrioQ = newVEB(u)
+	var v PrioQ = newVEB(u, fullInit)
 	return v
 }
 
@@ -54,15 +61,12 @@ func (v *VEB) Insert(x int) {
 		x = v.swap
 	}
 
-	if x > v.max {
-		v.max = x
-	}
 
 	if v.u > 2 {
 		i := v.high(x)
 		//lazy init
 		if v.local[i] == nil {
-			v.local[i] = newVEB(v.q)
+			v.local[i] = newVEB(v.q, false)
 		}
 		if v.local[i].min == -1 {
 			v.global[i] = true
@@ -71,6 +75,10 @@ func (v *VEB) Insert(x int) {
 		} else {
 			v.local[i].Insert(v.low(x))
 		}
+	}
+
+	if x > v.max {
+		v.max = x
 	}
 }
 func (v *VEB) Delete(x int) {
@@ -104,7 +112,7 @@ func (v *VEB) Delete(x int) {
 		if i == -1 {
 			fmt.Println("Should never happen, global min not found...")
 		}
-		//i := v.high(v.min)
+
 		x = i * v.q + v.local[i].min
 		v.min = x
 	}

@@ -10,7 +10,7 @@ import (
 func TestPrioQ(t *testing.T) {
 	var structsToTest = map[string]vEB.PrioQ{
 		"naive": vEB.InitNaivePrioQ(),
-		"vEB":   vEB.InitVEB(1024),
+		"vEB":   vEB.InitVEB(1 << 16, true),
 	}
 
 	for name := range structsToTest {
@@ -88,25 +88,28 @@ func BenchmarkNaivePrioQ(b *testing.B) {
 }
 func BenchmarkVEBPrioQ(b *testing.B) {
 	// create 100k random numbers
-	rngCnt := 10_000
+	rngCnt := 1 << 22
 	fmt.Printf("Creating %d random numbers ... ", rngCnt)
 	rng := make(map[int]bool, rngCnt)
 	var tmp, max int
 	for i := 0; i <rngCnt; i++ {
-		tmp = int(rand.Uint32())
+		tmp = int(rand.Intn(rngCnt))
 		if _,ok := rng[tmp]; !ok {
 			rng[tmp] = true
 			if max < tmp {
 				max = tmp
 			}
+		} else {
+			i--
 		}
 	}
-	fmt.Print("done!\n")
+	fmt.Printf("done! %v\n", len(rng))
+
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 
-		v := vEB.InitVEB(max)
+		v := vEB.InitVEB(max, true)
 
 		for x := range rng {
 			v.Insert(x)
