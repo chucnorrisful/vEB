@@ -26,10 +26,10 @@ See [test/main.go](test/main.go) for examples.
 
 ## Todos:
 
-- add safety features (member check on insertion, deletion etc.)
-- small optimisations: use bitmasks instead of integer division and mod2 calculations
-- add switch for lazyInit vs. fullInit
-- add sparse-mode: usage of hashmaps instead of arrays in internal structure may yield in massive space savings if inserted elements are sparse in a large universe.
-- add linked-list for nodes of tree: enables Succ, Pred in constant time
-- edit PrioQ protocol to also consume Member, Pred, Min, Max
-- extend to negative numbers
+- [ ] add safety features (member check on insertion, deletion etc.)
+- [ ] small optimisations: use bitmasks instead of integer division and mod2 calculations
+- [x] add switch for lazyInit vs. fullInit
+- [ ] add sparse-mode: usage of hashmaps instead of arrays in internal structure may yield in massive space savings if inserted elements are sparse in a large universe.
+- [ ] add linked-list for nodes of tree: enables Succ, Pred in constant time
+- [ ] edit PrioQ protocol to also consume Member, Pred, Min, Max
+- [ ] extend to negative numbers
