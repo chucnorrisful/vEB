@@ -8,7 +8,11 @@ import (
 // main provides some example code for using a vEB tree.
 func main() {
 
-	var v vEB.PrioQ = vEB.InitVEB(2 << 26, true)
+}
+
+func demo() {
+	var v vEB.PrioQ = new(vEB.V0)
+	v.Init(2<<26, true)
 
 	v.Insert(1)
 	s := v.Succ(0)
@@ -18,7 +22,7 @@ func main() {
 	fmt.Printf("successor of 1 is %v; this means it has no successor.\n", s)
 
 	test := []int{4, 3, 100, 200423, 3492939, 70}
-	for _,t := range test {
+	for _, t := range test {
 		v.Insert(t)
 	}
 

@@ -1,5 +1,0 @@
-package vEB
-
-func main() {
-
-}

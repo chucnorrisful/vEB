@@ -1,31 +1,33 @@
 package main
 
 import (
-	"fmt"
 	"github.com/chucnorrisful/vEB"
 	"math/rand"
+	"reflect"
 	"testing"
 )
 
 func TestPrioQ(t *testing.T) {
 	var structsToTest = map[string]vEB.PrioQ{
-		"naive": vEB.InitNaivePrioQ(),
-		"vEB":   vEB.InitVEB(1 << 16, true),
+		"naive":  &vEB.NaivePrioQ{},
+		"better": &vEB.BetterPrioQ{},
+		"v0":     &vEB.V0{},
+		"v1":     &vEB.V1{},
 	}
-
 	for name := range structsToTest {
 		var v vEB.PrioQ = structsToTest[name]
+		v.Init(1000, false)
 		var s = -1
 
 		v.Insert(1)
 
 		s = v.Succ(0)
 		if s != 1 {
-			t.Errorf("succ should have been 1 but was %v", s)
+			t.Errorf("%s: succ should have been 1 but was %v", name, s)
 		}
 		s = v.Succ(1)
 		if s != -1 {
-			t.Errorf("succ should have been -1 but was %v", s)
+			t.Errorf("%s: succ should have been -1 but was %v", name, s)
 		}
 
 		v.Insert(4)
@@ -36,11 +38,11 @@ func TestPrioQ(t *testing.T) {
 
 		s = v.Succ(0)
 		if s != 3 {
-			t.Errorf("succ should have been 3 but was %v", s)
+			t.Errorf("%s: succ should have been 3 but was %v", name, s)
 		}
 		s = v.Succ(4)
 		if s != 100 {
-			t.Errorf("succ should have been 100 but was %v", s)
+			t.Errorf("%s: succ should have been 100 but was %v", name, s)
 		}
 
 		v.Delete(3)
@@ -49,78 +51,124 @@ func TestPrioQ(t *testing.T) {
 
 		s = v.Succ(-1)
 		if s != -1 {
-			t.Errorf("succ (2) should have been -1 but was %v", s)
+			t.Errorf("%s: succ (2) should have been -1 but was %v", name, s)
 		}
 	}
-}
-
-func BenchmarkNaivePrioQ(b *testing.B) {
-	// create 100k random numbers
-	rngCnt := 10_000
-	fmt.Printf("Creating %d random numbers ... ", rngCnt)
-	rng := make(map[int]bool, rngCnt)
-	var tmp int
-	for i := 0; i <rngCnt; i++ {
-		tmp = int(rand.Uint32())
-		if _,ok := rng[tmp]; !ok {
-			rng[tmp] = true
-		}
+	u := 10_000
+	rng := rand.Perm(u)
+	ins := rng[:int(float64(len(rng))*0.7)]
+	del := ins[len(ins)/4 : len(ins)*3/4]
+	for name := range structsToTest {
+		var v vEB.PrioQ = structsToTest[name]
+		PrioQLoadTask(v, u, false, rng, ins, del)
 	}
-	fmt.Print("done!\n")
 
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-
-		v := vEB.InitNaivePrioQ()
-
-		for x := range rng {
-			v.Insert(x)
-		}
-
-		for x := range rng {
-			v.Succ(x)
-		}
-
-		for x := range rng {
-			v.Delete(x)
-		}
-	}
-}
-func BenchmarkVEBPrioQ(b *testing.B) {
-	// create 100k random numbers
-	rngCnt := 1 << 22
-	fmt.Printf("Creating %d random numbers ... ", rngCnt)
-	rng := make(map[int]bool, rngCnt)
-	var tmp, max int
-	for i := 0; i <rngCnt; i++ {
-		tmp = int(rand.Intn(rngCnt))
-		if _,ok := rng[tmp]; !ok {
-			rng[tmp] = true
-			if max < tmp {
-				max = tmp
+	// Do LoadTest and compare results
+	rems := make(map[string][]int)
+	for name := range structsToTest {
+		rem := make([]int, 0, len(ins))
+		var v vEB.PrioQ = structsToTest[name]
+		var x int
+		for {
+			x = v.Succ(-1)
+			if x == -1 {
+				break
 			}
-		} else {
-			i--
-		}
-	}
-	fmt.Printf("done! %v\n", len(rng))
-
-
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-
-		v := vEB.InitVEB(max, true)
-
-		for x := range rng {
-			v.Insert(x)
-		}
-
-		for x := range rng {
-			v.Succ(x)
-		}
-
-		for x := range rng {
+			rem = append(rem, x)
 			v.Delete(x)
 		}
+		rems[name] = rem
+	}
+	l, lN := -1, ""
+	for name, ints := range rems {
+		if l != -1 {
+			if l != len(ints) {
+				t.Errorf("%s output len does not align with %s: %d != %d", name, lN, len(ints), l)
+			}
+			if !reflect.DeepEqual(rems[name], rems[lN]) {
+				t.Errorf("%s output is not equal to %s", name, lN)
+			}
+		}
+		l = len(ints)
+		lN = name
+	}
+}
+func BenchmarkNaivePrioQ(b *testing.B) {
+	u := 100_000
+	rng := rand.Perm(u)
+	ins := rng[:int(float64(len(rng))*0.7)]
+	del := ins[len(ins)/4 : len(ins)*3/4]
+
+	for i := 0; i < b.N; i++ {
+		v := new(vEB.NaivePrioQ)
+		PrioQLoadTask(v, u, false, rng, ins, del)
+	}
+}
+func BenchmarkBetterPrioQ(b *testing.B) {
+	u := 100_000
+	rng := rand.Perm(u)
+	ins := rng[:int(float64(len(rng))*0.7)]
+	del := ins[len(ins)/4 : len(ins)*3/4]
+
+	for i := 0; i < b.N; i++ {
+		v := new(vEB.BetterPrioQ)
+		PrioQLoadTask(v, u, false, rng, ins, del)
+	}
+}
+func BenchmarkVEB_v0(b *testing.B) {
+	u := 100_000
+	rng := rand.Perm(u)
+	ins := rng[:int(float64(len(rng))*0.7)]
+	del := ins[len(ins)/4 : len(ins)*3/4]
+
+	for i := 0; i < b.N; i++ {
+		v := new(vEB.V0)
+		PrioQLoadTask(v, u, false, rng, ins, del)
+	}
+}
+func BenchmarkVEB_v1(b *testing.B) {
+	u := 100_000
+	rng := rand.Perm(u)
+	ins := rng[:int(float64(len(rng))*0.7)]
+	del := ins[len(ins)/4 : len(ins)*3/4]
+
+	for i := 0; i < b.N; i++ {
+		v := new(vEB.V1)
+		PrioQLoadTask(v, u, false, rng, ins, del)
+	}
+}
+
+//func BenchmarkVEBPrioQFullInit(b *testing.B) {
+//	u := 100_000
+//	rng := rand.Perm(u)
+//	ins := rng[:int(float64(len(rng))*0.7)]
+//	del := ins[len(ins)/4 : len(ins)*3/4]
+//
+//	for i := 0; i < b.N; i++ {
+//		v := new(vEB.VEB_v0)
+//		v.Init(u, true)
+//		b.StartTimer()
+//		PrioQLoadTask(v, u, true, rng, ins, del)
+//	}
+//}
+
+func PrioQLoadTask(pq vEB.PrioQ, u int, fullInit bool, rng, ins, del []int) {
+
+	pq.Init(u, fullInit)
+
+	for x := range ins {
+		pq.Insert(x)
+	}
+
+	for x := range rng {
+		pq.Succ(x)
+	}
+
+	for x := range del {
+		pq.Delete(x)
+	}
+
+	for x := range rng {
+		pq.Succ(x)
 	}
 }
