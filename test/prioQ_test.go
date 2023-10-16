@@ -9,10 +9,10 @@ import (
 
 func TestPrioQ(t *testing.T) {
 	var structsToTest = map[string]vEB.PrioQ{
-		"naive":  &vEB.NaivePrioQ{},
-		"better": &vEB.BetterPrioQ{},
-		"v0":     &vEB.V0{},
-		"v1":     &vEB.V1{},
+		"naive": &vEB.NaivePrioQ{},
+		"try0":  &vEB.Try0{},
+		"v0":    &vEB.V0{},
+		"v1":    &vEB.V1{},
 	}
 	for name := range structsToTest {
 		var v vEB.PrioQ = structsToTest[name]
@@ -34,7 +34,24 @@ func TestPrioQ(t *testing.T) {
 		v.Insert(3)
 		v.Insert(100)
 
+		if !v.Member(4) {
+			t.Errorf("%s: 4 should have been a member", name)
+		}
+		if v.Member(5) {
+			t.Errorf("%s: 5 shouldn't have been a member", name)
+		}
+
+		if v.Max() != 100 {
+			t.Errorf("%s: max should have been %d but was %d", name, 100, v.Max())
+		}
+		if v.Min() != 1 {
+			t.Errorf("%s: min should have been %d but was %d", name, 1, v.Min())
+		}
+
 		v.Delete(1)
+		if v.Member(1) {
+			t.Errorf("%s: 1 shouldn't have been a member", name)
+		}
 
 		s = v.Succ(0)
 		if s != 3 {
@@ -111,7 +128,7 @@ func BenchmarkBetterPrioQ(b *testing.B) {
 	del := ins[len(ins)/4 : len(ins)*3/4]
 
 	for i := 0; i < b.N; i++ {
-		v := new(vEB.BetterPrioQ)
+		v := new(vEB.Try0)
 		PrioQLoadTask(v, u, false, rng, ins, del)
 	}
 }

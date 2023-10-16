@@ -46,3 +46,33 @@ func (v *NaivePrioQ) Succ(x int) int {
 	}
 	return -1
 }
+func (v *NaivePrioQ) Pred(x int) int {
+	for i := len(v.data) - 1; i >= 0; i-- {
+		if v.data[i] < x {
+			return v.data[i]
+		}
+	}
+	return -1
+}
+func (v *NaivePrioQ) Min() int {
+	if len(v.data) == 0 {
+		return -1
+	}
+
+	return v.data[0]
+}
+func (v *NaivePrioQ) Max() int {
+	if len(v.data) == 0 {
+		return -1
+	}
+
+	return v.data[len(v.data)-1]
+}
+func (v *NaivePrioQ) Member(x int) bool {
+	for _, d := range v.data {
+		if x == d {
+			return true
+		}
+	}
+	return false
+}

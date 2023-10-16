@@ -33,9 +33,8 @@ func (v *V0) init(uSize int, fullInit bool) {
 	}
 }
 
-// Init inits a new van Emde Boas tree with universe size uSize.
+// Init inits a new Tree with universe size uSize.
 // uSize limits the maximum allowed whole numbers which are insertable to [0, uSize)
-// currently, negative numbers are not supported
 func (v *V0) Init(u int, fullInit bool) {
 	if u <= 1 {
 		panic("uSize has to be a positive integer larger than 1")
@@ -45,9 +44,6 @@ func (v *V0) Init(u int, fullInit bool) {
 	u = int(math.Exp2(math.Ceil(math.Log2(float64(u)))))
 	v.init(u, fullInit)
 }
-
-// todo: fast Pred/Succ/Member
-// todo: sparse mode (hashmaps instead of arrays)
 
 // Insert does not run in O(log log u) time if lazy initialisation of the tree structure is turned on.
 func (v *V0) Insert(x int) {
@@ -189,29 +185,23 @@ func (v *V0) Succ(x int) int {
 	//if global successor exists, return its min
 	return i*v.q + v.local[i].min
 }
-
-// not consumed by interface yet, but functional:
-
 func (v *V0) Member(x int) bool {
 	return v.Succ(x-1) == x
 }
-func (v *V0) Min(x int) int {
+func (v *V0) Min() int {
 	return v.min
 }
-func (v *V0) Max(x int) int {
+func (v *V0) Max() int {
 	return v.max
 }
 
-/*
-Todo: Predecessor
-func (v *VEB_v0) Pred(x int) int {
+// Todo: Predecessor
+func (v *V0) Pred(x int) int {
 	return -1
 }
-*/
 
 // helpers for getting the high and low bits of a number,
 // corresponding with its global cluster nummer and its local position in that cluster
-
 func (v *V0) low(x int) int {
 	//todo: replace with bitmasks for speed
 	return x % v.q
