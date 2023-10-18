@@ -10,6 +10,7 @@ import (
 func TestPrioQ(t *testing.T) {
 	var structsToTest = map[string]vEB.PrioQ{
 		"naive": &vEB.NaivePrioQ{},
+		"ll":    &vEB.LLPrioQ{},
 		"try0":  &vEB.Try0{},
 		"v0":    &vEB.V0{},
 		"v1":    &vEB.V1{},
@@ -121,12 +122,23 @@ func BenchmarkNaivePrioQ(b *testing.B) {
 		PrioQLoadTask(v, u, false, rng, ins, del)
 	}
 }
-func BenchmarkBetterPrioQ(b *testing.B) {
+func BenchmarkLLPrioQ(b *testing.B) {
 	u := 100_000
 	rng := rand.Perm(u)
 	ins := rng[:int(float64(len(rng))*0.7)]
 	del := ins[len(ins)/4 : len(ins)*3/4]
 
+	for i := 0; i < b.N; i++ {
+		v := new(vEB.LLPrioQ)
+		PrioQLoadTask(v, u, false, rng, ins, del)
+	}
+}
+func BenchmarkTry0(b *testing.B) {
+	u := 100_000
+	rng := rand.Perm(u)
+	ins := rng[:int(float64(len(rng))*0.7)]
+	del := ins[len(ins)/4 : len(ins)*3/4]
+	//b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		v := new(vEB.Try0)
 		PrioQLoadTask(v, u, false, rng, ins, del)
@@ -179,6 +191,10 @@ func PrioQLoadTask(pq vEB.PrioQ, u int, fullInit bool, rng, ins, del []int) {
 
 	for x := range rng {
 		pq.Succ(x)
+	}
+
+	for x := range rng {
+		pq.Member(x)
 	}
 
 	for x := range del {

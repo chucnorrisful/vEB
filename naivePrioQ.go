@@ -1,7 +1,7 @@
 package vEB
 
 // NaivePrioQ is a very simple implementation of the PrioQ interface using a sorted array.
-// It's not very performant, but serves as a simple benchmark to compare the vEB tree against.
+// It's not very performant, but serves as a baseline to compare against.
 type NaivePrioQ struct {
 	data []int
 }
