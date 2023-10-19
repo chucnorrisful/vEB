@@ -114,8 +114,11 @@ func TestPrioQ(t *testing.T) {
 		lN = name
 	}
 }
-func BenchmarkNaivePrioQ(b *testing.B) {
-	u := 100_000
+
+const SIZE = 10_000
+
+func BenchmarkArrPrioQ(b *testing.B) {
+	u := SIZE
 	rng := rand.Perm(u)
 	ins := rng[:int(float64(len(rng))*0.7)]
 	del := ins[len(ins)/4 : len(ins)*3/4]
@@ -126,7 +129,7 @@ func BenchmarkNaivePrioQ(b *testing.B) {
 	}
 }
 func BenchmarkLLPrioQ(b *testing.B) {
-	u := 100_000
+	u := SIZE
 	rng := rand.Perm(u)
 	ins := rng[:int(float64(len(rng))*0.7)]
 	del := ins[len(ins)/4 : len(ins)*3/4]
@@ -136,8 +139,9 @@ func BenchmarkLLPrioQ(b *testing.B) {
 		PrioQLoadTask(v, u, false, rng, ins, del)
 	}
 }
+
 func BenchmarkBitsPrioQ(b *testing.B) {
-	u := 100_000
+	u := SIZE
 	rng := rand.Perm(u)
 	ins := rng[:int(float64(len(rng))*0.7)]
 	del := ins[len(ins)/4 : len(ins)*3/4]
@@ -148,7 +152,7 @@ func BenchmarkBitsPrioQ(b *testing.B) {
 	}
 }
 func BenchmarkTry0(b *testing.B) {
-	u := 100_000
+	u := SIZE
 	rng := rand.Perm(u)
 	ins := rng[:int(float64(len(rng))*0.7)]
 	del := ins[len(ins)/4 : len(ins)*3/4]
@@ -159,7 +163,7 @@ func BenchmarkTry0(b *testing.B) {
 	}
 }
 func BenchmarkVEB_v0(b *testing.B) {
-	u := 100_000
+	u := SIZE
 	rng := rand.Perm(u)
 	ins := rng[:int(float64(len(rng))*0.7)]
 	del := ins[len(ins)/4 : len(ins)*3/4]
@@ -170,7 +174,7 @@ func BenchmarkVEB_v0(b *testing.B) {
 	}
 }
 func BenchmarkVEB_v1(b *testing.B) {
-	u := 100_000
+	u := SIZE
 	rng := rand.Perm(u)
 	ins := rng[:int(float64(len(rng))*0.7)]
 	del := ins[len(ins)/4 : len(ins)*3/4]
@@ -182,7 +186,7 @@ func BenchmarkVEB_v1(b *testing.B) {
 }
 
 //func BenchmarkVEBPrioQFullInit(b *testing.B) {
-//	u := 100_000
+//	u := SIZE
 //	rng := rand.Perm(u)
 //	ins := rng[:int(float64(len(rng))*0.7)]
 //	del := ins[len(ins)/4 : len(ins)*3/4]
