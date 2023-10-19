@@ -7,6 +7,8 @@ import (
 	"testing"
 )
 
+// todo: Add tests for overflows and underflows (succ, pred, insert, delete, member)
+
 func TestPrioQ(t *testing.T) {
 	var structsToTest = map[string]vEB.PrioQ{
 		"arr":  &vEB.ArrPrioQ{},
