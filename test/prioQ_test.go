@@ -9,11 +9,12 @@ import (
 
 func TestPrioQ(t *testing.T) {
 	var structsToTest = map[string]vEB.PrioQ{
-		"naive": &vEB.NaivePrioQ{},
-		"ll":    &vEB.LLPrioQ{},
-		"try0":  &vEB.Try0{},
-		"v0":    &vEB.V0{},
-		"v1":    &vEB.V1{},
+		"arr":  &vEB.ArrPrioQ{},
+		"ll":   &vEB.LLPrioQ{},
+		"bits": &vEB.BitsPrioQ{},
+		"try0": &vEB.Try0{},
+		"v0":   &vEB.V0{},
+		"v1":   &vEB.V1{},
 	}
 	for name := range structsToTest {
 		var v vEB.PrioQ = structsToTest[name]
@@ -69,7 +70,7 @@ func TestPrioQ(t *testing.T) {
 
 		s = v.Succ(-1)
 		if s != -1 {
-			t.Errorf("%s: succ (2) should have been -1 but was %v", name, s)
+			t.Errorf("%s: succ (-1) should have been -1 but was %v", name, s)
 		}
 	}
 	u := 10_000
@@ -118,7 +119,7 @@ func BenchmarkNaivePrioQ(b *testing.B) {
 	del := ins[len(ins)/4 : len(ins)*3/4]
 
 	for i := 0; i < b.N; i++ {
-		v := new(vEB.NaivePrioQ)
+		v := new(vEB.ArrPrioQ)
 		PrioQLoadTask(v, u, false, rng, ins, del)
 	}
 }
@@ -130,6 +131,17 @@ func BenchmarkLLPrioQ(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		v := new(vEB.LLPrioQ)
+		PrioQLoadTask(v, u, false, rng, ins, del)
+	}
+}
+func BenchmarkBitsPrioQ(b *testing.B) {
+	u := 100_000
+	rng := rand.Perm(u)
+	ins := rng[:int(float64(len(rng))*0.7)]
+	del := ins[len(ins)/4 : len(ins)*3/4]
+
+	for i := 0; i < b.N; i++ {
+		v := new(vEB.BitsPrioQ)
 		PrioQLoadTask(v, u, false, rng, ins, del)
 	}
 }

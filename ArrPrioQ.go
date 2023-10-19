@@ -1,16 +1,16 @@
 package vEB
 
-// NaivePrioQ is a very simple implementation of the PrioQ interface using a sorted array.
+// ArrPrioQ is a very simple implementation of the PrioQ interface using a sorted array.
 // It's not very performant, but serves as a baseline to compare against.
-type NaivePrioQ struct {
+type ArrPrioQ struct {
 	data []int
 }
 
-func (v *NaivePrioQ) Init(u int, fullInit bool) {
+func (v *ArrPrioQ) Init(u int, fullInit bool) {
 	v.data = make([]int, 0)
 }
 
-func (v *NaivePrioQ) Insert(x int) {
+func (v *ArrPrioQ) Insert(x int) {
 	var small = -1
 	for i, d := range v.data {
 		if d < x {
@@ -26,7 +26,7 @@ func (v *NaivePrioQ) Insert(x int) {
 	}
 	v.data[small+1] = x
 }
-func (v *NaivePrioQ) Delete(x int) {
+func (v *ArrPrioQ) Delete(x int) {
 	var xInd = -1
 	for i, d := range v.data {
 		if d == x {
@@ -38,7 +38,7 @@ func (v *NaivePrioQ) Delete(x int) {
 		v.data = append(v.data[:xInd], v.data[xInd+1:]...)
 	}
 }
-func (v *NaivePrioQ) Succ(x int) int {
+func (v *ArrPrioQ) Succ(x int) int {
 	for _, d := range v.data {
 		if d > x {
 			return d
@@ -46,7 +46,7 @@ func (v *NaivePrioQ) Succ(x int) int {
 	}
 	return -1
 }
-func (v *NaivePrioQ) Pred(x int) int {
+func (v *ArrPrioQ) Pred(x int) int {
 	for i := len(v.data) - 1; i >= 0; i-- {
 		if v.data[i] < x {
 			return v.data[i]
@@ -54,21 +54,21 @@ func (v *NaivePrioQ) Pred(x int) int {
 	}
 	return -1
 }
-func (v *NaivePrioQ) Min() int {
+func (v *ArrPrioQ) Min() int {
 	if len(v.data) == 0 {
 		return -1
 	}
 
 	return v.data[0]
 }
-func (v *NaivePrioQ) Max() int {
+func (v *ArrPrioQ) Max() int {
 	if len(v.data) == 0 {
 		return -1
 	}
 
 	return v.data[len(v.data)-1]
 }
-func (v *NaivePrioQ) Member(x int) bool {
+func (v *ArrPrioQ) Member(x int) bool {
 	for _, d := range v.data {
 		if x == d {
 			return true

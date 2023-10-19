@@ -7,7 +7,21 @@ import (
 
 // main provides some example code for using a vEB tree.
 func main() {
+	b := vEB.BitsPrioQ{}
+	b.Init(10_000, false)
 
+	b.Insert(1)
+	b.Insert(3)
+	b.Insert(8)
+	b.Insert(0)
+	b.Insert(66)
+	b.Delete(1)
+	b.Delete(3)
+	b.Delete(8)
+	b.Delete(0)
+	b.Delete(66)
+
+	fmt.Println(b.Succ(0))
 }
 
 func demo() {
