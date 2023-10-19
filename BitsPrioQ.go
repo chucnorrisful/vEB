@@ -6,8 +6,7 @@ import (
 	"math/bits"
 )
 
-// ArrPrioQ is a very simple implementation of the PrioQ interface using a sorted array.
-// It's not very performant, but serves as a baseline to compare against.
+// BitsPrioQ is an implementation of the PrioQ interface using an array of bitmaps.
 type BitsPrioQ struct {
 	data []uint64
 	mask uint64
