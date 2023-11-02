@@ -4,6 +4,7 @@ import (
 	"github.com/chucnorrisful/vEB"
 	"math/rand"
 	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -116,25 +117,8 @@ func TestPrioQ(t *testing.T) {
 	}
 }
 
-func TestTry1(t *testing.T) {
-	var v vEB.PrioQ = &vEB.Try1{}
-	v.Init(8, true)
-
-	v.Insert(1)
-	v.Insert(3)
-	v.Insert(4)
-	if v.Succ(2) != 3 {
-		t.Errorf("Succ of 2 should have been 3")
-	}
-	//fmt.Println(v.Succ(2))
-	v.Delete(3)
-	//fmt.Println(v.Succ(2))
-	if v.Succ(2) != 4 {
-		t.Errorf("Succ of 2 should have been 4")
-	}
-}
-
 const SIZE = 1_000_000
+const SORT_SIZE = 1_000_000
 
 func BenchmarkArrPrioQ(b *testing.B) {
 	u := SIZE
@@ -215,6 +199,33 @@ func BenchmarkVEB_v1(b *testing.B) {
 	}
 }
 
+func BenchmarkSortBitsPrioQ(b *testing.B) {
+	u := SORT_SIZE
+	rng := rand.Perm(u)
+
+	for i := 0; i < b.N; i++ {
+		v := new(vEB.BitsPrioQ)
+		PrioQSortTask(v, u, false, rng)
+	}
+}
+func BenchmarkSortStd(b *testing.B) {
+	u := SORT_SIZE
+	rng := rand.Perm(u)
+
+	for i := 0; i < b.N; i++ {
+		sort.Ints(rng)
+	}
+}
+func BenchmarkSortVEB_v0(b *testing.B) {
+	u := SORT_SIZE
+	rng := rand.Perm(u)
+
+	for i := 0; i < b.N; i++ {
+		v := new(vEB.V0)
+		PrioQSortTask(v, u, false, rng)
+	}
+}
+
 func PrioQLoadTask(pq vEB.PrioQ, u int, fullInit bool, rng, ins, del []int) {
 
 	pq.Init(u, fullInit)
@@ -238,4 +249,21 @@ func PrioQLoadTask(pq vEB.PrioQ, u int, fullInit bool, rng, ins, del []int) {
 	for x := range rng {
 		pq.Succ(x)
 	}
+}
+func PrioQSortTask(pq vEB.PrioQ, u int, fullInit bool, rng []int) []int {
+
+	pq.Init(u, fullInit)
+
+	for x := range rng {
+		pq.Insert(x)
+	}
+	res := make([]int, len(rng))
+
+	at := -1
+	for i := 0; i < len(rng); i++ {
+		at = pq.Succ(at)
+		res[i] = at
+	}
+
+	return res
 }
