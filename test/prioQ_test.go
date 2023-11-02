@@ -15,6 +15,7 @@ func TestPrioQ(t *testing.T) {
 		"ll":   &vEB.LLPrioQ{},
 		"bits": &vEB.BitsPrioQ{},
 		"try0": &vEB.Try0{},
+		"try1": &vEB.Try1{},
 		"v0":   &vEB.V0{},
 		"v1":   &vEB.V1{},
 	}
@@ -115,7 +116,25 @@ func TestPrioQ(t *testing.T) {
 	}
 }
 
-const SIZE = 10_000
+func TestTry1(t *testing.T) {
+	var v vEB.PrioQ = &vEB.Try1{}
+	v.Init(8, true)
+
+	v.Insert(1)
+	v.Insert(3)
+	v.Insert(4)
+	if v.Succ(2) != 3 {
+		t.Errorf("Succ of 2 should have been 3")
+	}
+	//fmt.Println(v.Succ(2))
+	v.Delete(3)
+	//fmt.Println(v.Succ(2))
+	if v.Succ(2) != 4 {
+		t.Errorf("Succ of 2 should have been 4")
+	}
+}
+
+const SIZE = 1_000_000
 
 func BenchmarkArrPrioQ(b *testing.B) {
 	u := SIZE
@@ -162,6 +181,17 @@ func BenchmarkTry0(b *testing.B) {
 		PrioQLoadTask(v, u, false, rng, ins, del)
 	}
 }
+func BenchmarkTry1(b *testing.B) {
+	u := SIZE
+	rng := rand.Perm(u)
+	ins := rng[:int(float64(len(rng))*0.7)]
+	del := ins[len(ins)/4 : len(ins)*3/4]
+	//b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		v := new(vEB.Try1)
+		PrioQLoadTask(v, u, false, rng, ins, del)
+	}
+}
 func BenchmarkVEB_v0(b *testing.B) {
 	u := SIZE
 	rng := rand.Perm(u)
@@ -184,20 +214,6 @@ func BenchmarkVEB_v1(b *testing.B) {
 		PrioQLoadTask(v, u, false, rng, ins, del)
 	}
 }
-
-//func BenchmarkVEBPrioQFullInit(b *testing.B) {
-//	u := SIZE
-//	rng := rand.Perm(u)
-//	ins := rng[:int(float64(len(rng))*0.7)]
-//	del := ins[len(ins)/4 : len(ins)*3/4]
-//
-//	for i := 0; i < b.N; i++ {
-//		v := new(vEB.VEB_v0)
-//		v.Init(u, true)
-//		b.StartTimer()
-//		PrioQLoadTask(v, u, true, rng, ins, del)
-//	}
-//}
 
 func PrioQLoadTask(pq vEB.PrioQ, u int, fullInit bool, rng, ins, del []int) {
 
