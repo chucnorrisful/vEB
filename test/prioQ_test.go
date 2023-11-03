@@ -18,6 +18,7 @@ func TestPrioQ(t *testing.T) {
 		"bits": &vEB.BitsPrioQ{},
 		"try0": &vEB.Try0{},
 		"try1": &vEB.Try1{},
+		"try2": &vEB.Try2{},
 		"v0":   &vEB.V0{},
 		"v1":   &vEB.V1{},
 	}
@@ -126,11 +127,12 @@ type algo struct {
 var algos = []algo{
 	//{"ll", func() vEB.PrioQ { return &vEB.LLPrioQ{} }},
 	//{"arr", func() vEB.PrioQ { return &vEB.ArrPrioQ{} }},
-	{"bits", func() vEB.PrioQ { return &vEB.BitsPrioQ{} }},
+	//{"bits", func() vEB.PrioQ { return &vEB.BitsPrioQ{} }},
 	//{"try0", func() vEB.PrioQ { return &vEB.Try0{} }},
-	//{"try1", func() vEB.PrioQ { return &vEB.Try1{} }},
-	//{"v0", func() vEB.PrioQ { return &vEB.V0{} }},
-	//{"v1", func() vEB.PrioQ { return &vEB.V1{} }},
+	{"try1", func() vEB.PrioQ { return &vEB.Try1{} }},
+	{"try2", func() vEB.PrioQ { return &vEB.Try2{} }},
+	{"v0", func() vEB.PrioQ { return &vEB.V0{} }},
+	{"v1", func() vEB.PrioQ { return &vEB.V1{} }},
 	{"std", func() vEB.PrioQ { return nil }},
 }
 var sizes = []int{
