@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/chucnorrisful/vEB"
 	"math/rand"
 	"reflect"
@@ -117,130 +118,60 @@ func TestPrioQ(t *testing.T) {
 	}
 }
 
-const SIZE = 1_000_000
-const SORT_SIZE = 50_000_000
-
-func BenchmarkArrPrioQ(b *testing.B) {
-	u := SIZE
-	rng := rand.Perm(u)
-	ins := rng[:int(float64(len(rng))*0.7)]
-	del := ins[len(ins)/4 : len(ins)*3/4]
-
-	for i := 0; i < b.N; i++ {
-		v := new(vEB.ArrPrioQ)
-		PrioQLoadTask(v, u, false, rng, ins, del)
-	}
-}
-func BenchmarkLLPrioQ(b *testing.B) {
-	u := SIZE
-	rng := rand.Perm(u)
-	ins := rng[:int(float64(len(rng))*0.7)]
-	del := ins[len(ins)/4 : len(ins)*3/4]
-
-	for i := 0; i < b.N; i++ {
-		v := new(vEB.LLPrioQ)
-		PrioQLoadTask(v, u, false, rng, ins, del)
-	}
+type algo struct {
+	name string
+	gen  func() vEB.PrioQ
 }
 
-func BenchmarkBitsPrioQ(b *testing.B) {
-	u := SIZE
-	rng := rand.Perm(u)
-	ins := rng[:int(float64(len(rng))*0.7)]
-	del := ins[len(ins)/4 : len(ins)*3/4]
-
-	for i := 0; i < b.N; i++ {
-		v := new(vEB.BitsPrioQ)
-		PrioQLoadTask(v, u, false, rng, ins, del)
-	}
+var algos = []algo{
+	//{"ll", func() vEB.PrioQ { return &vEB.LLPrioQ{} }},
+	//{"arr", func() vEB.PrioQ { return &vEB.ArrPrioQ{} }},
+	{"bits", func() vEB.PrioQ { return &vEB.BitsPrioQ{} }},
+	//{"try0", func() vEB.PrioQ { return &vEB.Try0{} }},
+	//{"try1", func() vEB.PrioQ { return &vEB.Try1{} }},
+	//{"v0", func() vEB.PrioQ { return &vEB.V0{} }},
+	//{"v1", func() vEB.PrioQ { return &vEB.V1{} }},
+	{"std", func() vEB.PrioQ { return nil }},
 }
-func BenchmarkTry0(b *testing.B) {
-	u := SIZE
-	rng := rand.Perm(u)
-	ins := rng[:int(float64(len(rng))*0.7)]
-	del := ins[len(ins)/4 : len(ins)*3/4]
-	//b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		v := new(vEB.Try0)
-		PrioQLoadTask(v, u, false, rng, ins, del)
-	}
-}
-func BenchmarkTry1(b *testing.B) {
-	u := SIZE
-	rng := rand.Perm(u)
-	ins := rng[:int(float64(len(rng))*0.7)]
-	del := ins[len(ins)/4 : len(ins)*3/4]
-	//b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		v := new(vEB.Try1)
-		PrioQLoadTask(v, u, false, rng, ins, del)
-	}
-}
-func BenchmarkVEB_v0(b *testing.B) {
-	u := SIZE
-	rng := rand.Perm(u)
-	ins := rng[:int(float64(len(rng))*0.7)]
-	del := ins[len(ins)/4 : len(ins)*3/4]
-
-	for i := 0; i < b.N; i++ {
-		v := new(vEB.V0)
-		PrioQLoadTask(v, u, false, rng, ins, del)
-	}
-}
-func BenchmarkVEB_v1(b *testing.B) {
-	u := SIZE
-	rng := rand.Perm(u)
-	ins := rng[:int(float64(len(rng))*0.7)]
-	del := ins[len(ins)/4 : len(ins)*3/4]
-
-	for i := 0; i < b.N; i++ {
-		v := new(vEB.V1)
-		PrioQLoadTask(v, u, false, rng, ins, del)
-	}
+var sizes = []int{
+	100,
+	1000,
+	10_000,
+	100_000,
+	1_000_000,
+	5_000_000,
+	10_000_000,
 }
 
-func BenchmarkSortBitsPrioQ(b *testing.B) {
-	u := SORT_SIZE
-	rng := rand.Perm(u)
-
-	for i := 0; i < b.N; i++ {
-		v := new(vEB.BitsPrioQ)
-		PrioQSortTask(v, u, false, rng)
+func BenchmarkSortAll(b *testing.B) {
+	for _, v := range sizes {
+		rng := rand.Perm(v)
+		for _, algo := range algos {
+			b.Run(fmt.Sprintf("size_%d_algo_%v", v, algo.name), func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					a := algo.gen()
+					PrioQSortTask(a, v, true, rng)
+				}
+			})
+		}
 	}
 }
-func BenchmarkSortStd(b *testing.B) {
-	u := SORT_SIZE
-	rng := rand.Perm(u)
-
-	for i := 0; i < b.N; i++ {
-		sort.Ints(rng)
-	}
-}
-func BenchmarkSortVEB_v0(b *testing.B) {
-	u := SORT_SIZE
-	rng := rand.Perm(u)
-
-	for i := 0; i < b.N; i++ {
-		v := new(vEB.V0)
-		PrioQSortTask(v, u, false, rng)
-	}
-}
-func BenchmarkSortTry0(b *testing.B) {
-	u := SORT_SIZE
-	rng := rand.Perm(u)
-
-	for i := 0; i < b.N; i++ {
-		v := new(vEB.Try0)
-		PrioQSortTask(v, u, false, rng)
-	}
-}
-func BenchmarkSortTry1(b *testing.B) {
-	u := SORT_SIZE
-	rng := rand.Perm(u)
-
-	for i := 0; i < b.N; i++ {
-		v := new(vEB.Try1)
-		PrioQSortTask(v, u, false, rng)
+func BenchmarkLoadAll(b *testing.B) {
+	for _, v := range sizes {
+		rng := rand.Perm(v)
+		ins := rng[:int(float64(len(rng))*0.7)]
+		del := ins[len(ins)/4 : len(ins)*3/4]
+		for _, algo := range algos {
+			if algo.gen() == nil {
+				continue
+			}
+			b.Run(fmt.Sprintf("size_%d_algo_%v", v, algo.name), func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					a := algo.gen()
+					PrioQLoadTask(a, v, true, rng, ins, del)
+				}
+			})
+		}
 	}
 }
 
@@ -269,6 +200,12 @@ func PrioQLoadTask(pq vEB.PrioQ, u int, fullInit bool, rng, ins, del []int) {
 	}
 }
 func PrioQSortTask(pq vEB.PrioQ, u int, fullInit bool, rng []int) []int {
+
+	if pq == nil {
+		// std.sort default case to compare
+		sort.Ints(rng)
+		return rng
+	}
 
 	pq.Init(u, fullInit)
 
