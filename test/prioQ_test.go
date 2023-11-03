@@ -118,7 +118,7 @@ func TestPrioQ(t *testing.T) {
 }
 
 const SIZE = 1_000_000
-const SORT_SIZE = 1_000_000
+const SORT_SIZE = 50_000_000
 
 func BenchmarkArrPrioQ(b *testing.B) {
 	u := SIZE
@@ -222,6 +222,24 @@ func BenchmarkSortVEB_v0(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		v := new(vEB.V0)
+		PrioQSortTask(v, u, false, rng)
+	}
+}
+func BenchmarkSortTry0(b *testing.B) {
+	u := SORT_SIZE
+	rng := rand.Perm(u)
+
+	for i := 0; i < b.N; i++ {
+		v := new(vEB.Try0)
+		PrioQSortTask(v, u, false, rng)
+	}
+}
+func BenchmarkSortTry1(b *testing.B) {
+	u := SORT_SIZE
+	rng := rand.Perm(u)
+
+	for i := 0; i < b.N; i++ {
+		v := new(vEB.Try1)
 		PrioQSortTask(v, u, false, rng)
 	}
 }
