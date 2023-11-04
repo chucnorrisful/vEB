@@ -134,9 +134,10 @@ var algos = []algo{
 	//{"try1", func() vEB.PrioQ { return &vEB.Try1{} }},
 	//{"try2", func() vEB.PrioQ { return &vEB.Try2{} }},
 	//{"try3", func() vEB.PrioQ { return &vEB.Try3{} }},
+	{"try4", func() vEB.PrioQ { return &vEB.Try4{} }},
 	//{"v0", func() vEB.PrioQ { return &vEB.V0{} }},
 	//{"v1", func() vEB.PrioQ { return &vEB.V1{} }},
-	{"std", func() vEB.PrioQ { return nil }},
+	//{"std", func() vEB.PrioQ { return nil }},
 }
 var sizes = []int{
 	//100,
@@ -144,7 +145,8 @@ var sizes = []int{
 	//10_000,
 	//100_000,
 	//1_000_000,
-	100_000_000,
+	1_000_000,
+	//100_000_000,
 }
 
 func BenchmarkSortAll(b *testing.B) {
@@ -160,18 +162,6 @@ func BenchmarkSortAll(b *testing.B) {
 					rng := rngMain
 					b.StartTimer()
 					PrioQSortTask(a, rng)
-				}
-			})
-		}
-	}
-}
-func BenchmarkInitAll(b *testing.B) {
-	for _, v := range sizes {
-		for _, algo := range algos {
-			b.Run(fmt.Sprintf("init_size_%d_algo_%v", v, algo.name), func(b *testing.B) {
-				for i := 0; i < b.N; i++ {
-					a := algo.gen()
-					a.Init(v, true)
 				}
 			})
 		}
@@ -195,6 +185,84 @@ func BenchmarkLoadAll(b *testing.B) {
 					rng, ins, del := rngMain, insMain, delMain
 
 					PrioQLoadTask(a, rng, ins, del)
+				}
+			})
+		}
+	}
+}
+
+func BenchmarkInitAll(b *testing.B) {
+	for _, v := range sizes {
+		for _, algo := range algos {
+			b.Run(fmt.Sprintf("init_size_%d_algo_%v", v, algo.name), func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					a := algo.gen()
+					a.Init(v, true)
+				}
+			})
+		}
+	}
+}
+func BenchmarkMemberAll(b *testing.B) {
+	for _, v := range sizes {
+		rng := rand.Perm(v)
+		ins := rng[:int(float64(len(rng))*0.7)]
+
+		for _, algo := range algos {
+			a := algo.gen()
+			if a == nil {
+				continue
+			}
+			PrioQInitTask(a, v, true)
+			for x := range ins {
+				a.Insert(x)
+			}
+
+			b.Run(fmt.Sprintf("size_%d_algo_%v", v, algo.name), func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					PrioQMemberTask(a, rng)
+				}
+			})
+		}
+	}
+}
+func BenchmarkSuccAll(b *testing.B) {
+	for _, v := range sizes {
+		rng := rand.Perm(v)
+		ins := rng[:int(float64(len(rng))*0.7)]
+
+		for _, algo := range algos {
+			a := algo.gen()
+			if a == nil {
+				continue
+			}
+			PrioQInitTask(a, v, true)
+			for x := range ins {
+				a.Insert(x)
+			}
+
+			b.Run(fmt.Sprintf("size_%d_algo_%v", v, algo.name), func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					PrioQSuccTask(a, rng)
+				}
+			})
+		}
+	}
+}
+func BenchmarkInsertAll(b *testing.B) {
+	for _, v := range sizes {
+		rng := rand.Perm(v)
+
+		for _, algo := range algos {
+			a := algo.gen()
+			if a == nil {
+				continue
+			}
+			PrioQInitTask(a, v, true)
+
+			b.Run(fmt.Sprintf("size_%d_algo_%v", v, algo.name), func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					PrioQInsertTask(a, rng)
 				}
 			})
 		}
@@ -229,6 +297,21 @@ func PrioQLoadTask(pq vEB.PrioQ, rng, ins, del []int) {
 		pq.Delete(x)
 	}
 
+	for x := range rng {
+		pq.Succ(x)
+	}
+}
+func PrioQMemberTask(pq vEB.PrioQ, rng []int) {
+	for x := range rng {
+		pq.Member(x)
+	}
+}
+func PrioQInsertTask(pq vEB.PrioQ, rng []int) {
+	for x := range rng {
+		pq.Insert(x)
+	}
+}
+func PrioQSuccTask(pq vEB.PrioQ, rng []int) {
 	for x := range rng {
 		pq.Succ(x)
 	}
