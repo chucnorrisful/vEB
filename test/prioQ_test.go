@@ -19,6 +19,7 @@ func TestPrioQ(t *testing.T) {
 		"try0": &vEB.Try0{},
 		"try1": &vEB.Try1{},
 		"try2": &vEB.Try2{},
+		"try3": &vEB.Try3{},
 		"v0":   &vEB.V0{},
 		"v1":   &vEB.V1{},
 	}
@@ -85,7 +86,8 @@ func TestPrioQ(t *testing.T) {
 	del := ins[len(ins)/4 : len(ins)*3/4]
 	for name := range structsToTest {
 		var v vEB.PrioQ = structsToTest[name]
-		PrioQLoadTask(v, u, false, rng, ins, del)
+		PrioQInitTask(v, u, true)
+		PrioQLoadTask(v, rng, ins, del)
 	}
 
 	// Do LoadTest and compare results
@@ -129,30 +131,48 @@ var algos = []algo{
 	//{"arr", func() vEB.PrioQ { return &vEB.ArrPrioQ{} }},
 	//{"bits", func() vEB.PrioQ { return &vEB.BitsPrioQ{} }},
 	//{"try0", func() vEB.PrioQ { return &vEB.Try0{} }},
-	{"try1", func() vEB.PrioQ { return &vEB.Try1{} }},
-	{"try2", func() vEB.PrioQ { return &vEB.Try2{} }},
-	{"v0", func() vEB.PrioQ { return &vEB.V0{} }},
-	{"v1", func() vEB.PrioQ { return &vEB.V1{} }},
-	{"std", func() vEB.PrioQ { return nil }},
+	//{"try1", func() vEB.PrioQ { return &vEB.Try1{} }},
+	//{"try2", func() vEB.PrioQ { return &vEB.Try2{} }},
+	{"try3", func() vEB.PrioQ { return &vEB.Try3{} }},
+	//{"v0", func() vEB.PrioQ { return &vEB.V0{} }},
+	//{"v1", func() vEB.PrioQ { return &vEB.V1{} }},
+	//{"std", func() vEB.PrioQ { return nil }},
 }
 var sizes = []int{
-	100,
-	1000,
-	10_000,
-	100_000,
+	//100,
+	//1000,
+	//10_000,
+	//100_000,
 	1_000_000,
-	5_000_000,
-	10_000_000,
+	//5_000_000,
+	//10_000_000,
 }
 
 func BenchmarkSortAll(b *testing.B) {
 	for _, v := range sizes {
-		rng := rand.Perm(v)
+		rngMain := rand.Perm(v)
 		for _, algo := range algos {
+			a := algo.gen()
+			PrioQInitTask(a, v, true)
+
 			b.Run(fmt.Sprintf("size_%d_algo_%v", v, algo.name), func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
+					b.StopTimer()
+					rng := rngMain
+					b.StartTimer()
+					PrioQSortTask(a, rng)
+				}
+			})
+		}
+	}
+}
+func BenchmarkInitAll(b *testing.B) {
+	for _, v := range sizes {
+		for _, algo := range algos {
+			b.Run(fmt.Sprintf("init_size_%d_algo_%v", v, algo.name), func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
 					a := algo.gen()
-					PrioQSortTask(a, v, true, rng)
+					a.Init(v, true)
 				}
 			})
 		}
@@ -160,26 +180,39 @@ func BenchmarkSortAll(b *testing.B) {
 }
 func BenchmarkLoadAll(b *testing.B) {
 	for _, v := range sizes {
-		rng := rand.Perm(v)
-		ins := rng[:int(float64(len(rng))*0.7)]
-		del := ins[len(ins)/4 : len(ins)*3/4]
+		rngMain := rand.Perm(v)
+		insMain := rngMain[:int(float64(len(rngMain))*0.7)]
+		delMain := insMain[len(insMain)/4 : len(insMain)*3/4]
+
 		for _, algo := range algos {
-			if algo.gen() == nil {
+			a := algo.gen()
+			if a == nil {
 				continue
 			}
+			PrioQInitTask(a, v, true)
+
 			b.Run(fmt.Sprintf("size_%d_algo_%v", v, algo.name), func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					a := algo.gen()
-					PrioQLoadTask(a, v, true, rng, ins, del)
+					rng, ins, del := rngMain, insMain, delMain
+
+					PrioQLoadTask(a, rng, ins, del)
 				}
 			})
 		}
 	}
 }
 
-func PrioQLoadTask(pq vEB.PrioQ, u int, fullInit bool, rng, ins, del []int) {
+func PrioQInitTask(pq vEB.PrioQ, u int, fullInit bool) {
+	if pq == nil {
+		return
+	}
 
 	pq.Init(u, fullInit)
+}
+func PrioQLoadTask(pq vEB.PrioQ, rng, ins, del []int) {
+	if pq == nil {
+		return
+	}
 
 	for x := range ins {
 		pq.Insert(x)
@@ -201,15 +234,12 @@ func PrioQLoadTask(pq vEB.PrioQ, u int, fullInit bool, rng, ins, del []int) {
 		pq.Succ(x)
 	}
 }
-func PrioQSortTask(pq vEB.PrioQ, u int, fullInit bool, rng []int) []int {
-
+func PrioQSortTask(pq vEB.PrioQ, rng []int) []int {
 	if pq == nil {
 		// std.sort default case to compare
 		sort.Ints(rng)
 		return rng
 	}
-
-	pq.Init(u, fullInit)
 
 	for x := range rng {
 		pq.Insert(x)
