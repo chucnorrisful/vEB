@@ -129,23 +129,22 @@ type algo struct {
 var algos = []algo{
 	//{"ll", func() vEB.PrioQ { return &vEB.LLPrioQ{} }},
 	//{"arr", func() vEB.PrioQ { return &vEB.ArrPrioQ{} }},
-	//{"bits", func() vEB.PrioQ { return &vEB.BitsPrioQ{} }},
+	{"bits", func() vEB.PrioQ { return &vEB.BitsPrioQ{} }},
 	//{"try0", func() vEB.PrioQ { return &vEB.Try0{} }},
 	//{"try1", func() vEB.PrioQ { return &vEB.Try1{} }},
 	//{"try2", func() vEB.PrioQ { return &vEB.Try2{} }},
-	{"try3", func() vEB.PrioQ { return &vEB.Try3{} }},
+	//{"try3", func() vEB.PrioQ { return &vEB.Try3{} }},
 	//{"v0", func() vEB.PrioQ { return &vEB.V0{} }},
 	//{"v1", func() vEB.PrioQ { return &vEB.V1{} }},
-	//{"std", func() vEB.PrioQ { return nil }},
+	{"std", func() vEB.PrioQ { return nil }},
 }
 var sizes = []int{
 	//100,
 	//1000,
 	//10_000,
 	//100_000,
-	1_000_000,
-	//5_000_000,
-	//10_000_000,
+	//1_000_000,
+	100_000_000,
 }
 
 func BenchmarkSortAll(b *testing.B) {

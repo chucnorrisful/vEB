@@ -12,7 +12,7 @@ type Try2 struct {
 	min, max int
 }
 
-const MEMBER2 = true
+const MEMBER2 = false
 
 func (v *Try2) Init(u int, fullInit bool) {
 	v.u = 1 << int(math.Ceil(math.Log2(float64(u))))
@@ -142,6 +142,12 @@ func (v *Try2) Member(x int) bool {
 	}
 	if x > v.max {
 		return false
+	}
+	if x == v.min {
+		return true
+	}
+	if x == v.max {
+		return true
 	}
 	if v.u == 2 {
 		// as above checked, x is eighter min or max, and thus is a member

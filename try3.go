@@ -1,18 +1,19 @@
 package vEB
 
 import (
+	"fmt"
 	"math"
 )
 
 type Try3 struct {
-	global   PrioQ
-	local    []*PrioQ
+	global   *Try3
+	local    []*Try3
 	u, q, m  int
 	q_       int //log2(q)
 	min, max int
 }
 
-const MEMBER3 = true
+const MEMBER3 = false
 
 func (v *Try3) Init(u int, fullInit bool) {
 	v.u = 1 << int(math.Ceil(math.Log2(float64(u))))
@@ -25,11 +26,11 @@ func (v *Try3) Init(u int, fullInit bool) {
 		v.global = &Try3{}
 		v.global.Init(v.m, fullInit)
 
-		v.local = make([]*PrioQ, v.m)
-		for i := range v.local {
-			var a PrioQ = &Try3{}
+		v.local = make([]*Try3, v.m)
+		for i, _ := range v.local {
+			a := &Try3{}
 			a.Init(v.q, fullInit)
-			v.local[i] = &a
+			v.local[i] = a
 		}
 	}
 }
@@ -46,12 +47,11 @@ func (v *Try3) Insert(x int) {
 		v.max = x
 	}
 	if v.u > 2 {
-		xHi, xLo := v.split(x)
-		loc := *v.local[xHi]
-		if loc.Min() < 0 {
+		xHi := v.high(x)
+		if v.local[xHi].min < 0 {
 			v.global.Insert(int(xHi))
 		}
-		loc.Insert(int(xLo))
+		v.local[xHi].Insert(int(v.low(x)))
 	}
 }
 func (v *Try3) Succ(x int) int {
@@ -70,23 +70,26 @@ func (v *Try3) Succ(x int) int {
 		return v.min
 	}
 
-	xHi, xLo := v.split(x)
-	maxLo := (*v.local[xHi]).Max()
+	xHi, xLo := v.high(x), v.low(x)
+	maxLo := (v.local[xHi]).max
 	if maxLo >= 0 && int(xLo) < maxLo {
-		return int(xHi)*v.q + (*v.local[xHi]).Succ(int(xLo))
+		return int(xHi)*v.q + (v.local[xHi]).Succ(int(xLo))
 	}
 
 	gloSucc := v.global.Succ(int(xHi))
 	if gloSucc < 0 {
 		return -1
 	}
-	return gloSucc*v.q + (*v.local[gloSucc]).Min()
+	return gloSucc*v.q + (v.local[gloSucc]).min
 }
 func (v *Try3) Pred(x int) int {
 	// todo:
 	return -1
 }
 func (v *Try3) Delete(x int) {
+	if x < 0 {
+		return
+	}
 	if v.max == v.min {
 		// guard delete wrong number
 		if v.min != x {
@@ -101,25 +104,28 @@ func (v *Try3) Delete(x int) {
 		return
 	}
 	if v.min == x {
-		gMin := v.global.Min()
-		x = gMin*v.q + (*v.local[gMin]).Min()
+		gMin := v.global.min
+		x = gMin*v.q + (v.local[gMin]).min
 		v.min = x
 	}
-	xHi, xLo := v.split(x)
-	(*v.local[xHi]).Delete(int(xLo))
-	if (*v.local[xHi]).Min() < 0 {
+	xHi, xLo := v.high(x), v.low(x)
+	if xHi > 100000000 {
+		fmt.Println("lol")
+	}
+	(v.local[xHi]).Delete(int(xLo))
+	if (v.local[xHi]).min < 0 {
 		v.global.Delete(int(xHi))
 		if x == v.max {
-			gloMax := v.global.Max()
+			gloMax := v.global.max
 			if gloMax < 0 {
 				v.max = v.min
 			} else {
-				v.max = gloMax*v.q + (*v.local[gloMax]).Max()
+				v.max = gloMax*v.q + (v.local[gloMax]).max
 			}
 		}
 	} else {
 		if x == v.max {
-			v.max = int(xHi)*v.q + (*v.local[int(xHi)]).Max()
+			v.max = int(xHi)*v.q + (v.local[int(xHi)]).max
 		}
 	}
 }
@@ -143,24 +149,29 @@ func (v *Try3) Member(x int) bool {
 	if x > v.max {
 		return false
 	}
+	if x == v.min {
+		return true
+	}
+	if x == v.max {
+		return true
+	}
 	if v.u == 2 {
 		// as above checked, x is eighter min or max, and thus is a member
 		return true
 	}
 
-	xHi, xLo := v.split(x)
+	xHi := v.high(x)
 
 	if !v.global.Member(int(xHi)) {
 		return false
 	}
 
-	return (*v.local[xHi]).Member(int(xLo))
+	return (v.local[xHi]).Member(int(v.low(x)))
 }
 
-func (v *Try3) split(x int) (hi, lo uint64) {
-	x2 := uint64(x)
-
-	hi = x2 >> v.q_
-	lo = x2 & (^uint64(0) >> (64 - v.q_))
-	return
+func (v *Try3) high(x int) uint64 {
+	return uint64(x) >> v.q_
+}
+func (v *Try3) low(x int) uint64 {
+	return uint64(x) & (^uint64(0) >> (64 - v.q_))
 }
