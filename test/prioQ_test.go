@@ -11,110 +11,133 @@ import (
 
 // todo: Add tests for overflows and underflows (succ, pred, insert, delete, member)
 
+var algosTst = []algo{
+	{"ll", func() vEB.PrioQ { return &vEB.LLPrioQ{} }},
+	{"arr", func() vEB.PrioQ { return &vEB.ArrPrioQ{} }},
+	{"bits", func() vEB.PrioQ { return &vEB.BitsPrioQ{} }},
+	{"try0", func() vEB.PrioQ { return &vEB.Try0{} }},
+	{"try1", func() vEB.PrioQ { return &vEB.Try1{} }},
+	{"try2", func() vEB.PrioQ { return &vEB.Try2{} }},
+	{"try3", func() vEB.PrioQ { return &vEB.Try3{} }},
+	//{"try4", func() vEB.PrioQ { return &vEB.Try4{} }},
+	{"v0", func() vEB.PrioQ { return &vEB.V0{} }},
+	{"v1", func() vEB.PrioQ { return &vEB.V1{} }},
+}
+
 func TestPrioQ(t *testing.T) {
-	var structsToTest = map[string]vEB.PrioQ{
-		"arr":  &vEB.ArrPrioQ{},
-		"ll":   &vEB.LLPrioQ{},
-		"bits": &vEB.BitsPrioQ{},
-		"try0": &vEB.Try0{},
-		"try1": &vEB.Try1{},
-		"try2": &vEB.Try2{},
-		"try3": &vEB.Try3{},
-		"v0":   &vEB.V0{},
-		"v1":   &vEB.V1{},
+	for _, alg := range algosTst {
+		name := alg.name
+		v := alg.gen()
+		t.Run(fmt.Sprintf("%v_interface", name), func(t *testing.T) {
+			v.Init(1000, false)
+			var s = -1
+
+			v.Insert(1)
+
+			s = v.Succ(0)
+			if s != 1 {
+				t.Errorf("%s: succ should have been 1 but was %v", name, s)
+			}
+			s = v.Succ(1)
+			if s != -1 {
+				t.Errorf("%s: succ should have been -1 but was %v", name, s)
+			}
+			s = v.Pred(0)
+			if s != -1 {
+				t.Errorf("%s: pred should have been -1 but was %v", name, s)
+			}
+			s = v.Pred(3)
+			if s != 1 {
+				t.Errorf("%s: pred should have been 1 but was %v", name, s)
+			}
+
+			v.Insert(4)
+			v.Insert(3)
+			v.Insert(100)
+
+			if !v.Member(4) {
+				t.Errorf("%s: 4 should have been a member", name)
+			}
+			if v.Member(5) {
+				t.Errorf("%s: 5 shouldn't have been a member", name)
+			}
+
+			if v.Max() != 100 {
+				t.Errorf("%s: max should have been %d but was %d", name, 100, v.Max())
+			}
+			if v.Min() != 1 {
+				t.Errorf("%s: min should have been %d but was %d", name, 1, v.Min())
+			}
+
+			v.Delete(1)
+			if v.Member(1) {
+				t.Errorf("%s: 1 shouldn't have been a member", name)
+			}
+
+			s = v.Succ(0)
+			if s != 3 {
+				t.Errorf("%s: succ should have been 3 but was %v", name, s)
+			}
+			s = v.Succ(4)
+			if s != 100 {
+				t.Errorf("%s: succ should have been 100 but was %v", name, s)
+			}
+			s = v.Pred(3)
+			if s != -1 {
+				t.Errorf("%s: pred should have been -1 but was %v", name, s)
+			}
+			s = v.Pred(4)
+			if s != 3 {
+				t.Errorf("%s: pred should have been 3 but was %v", name, s)
+			}
+
+			v.Delete(3)
+			v.Delete(4)
+			v.Delete(100)
+
+			s = v.Succ(-1)
+			if s != -1 {
+				t.Errorf("%s: succ (-1) should have been -1 but was %v", name, s)
+			}
+			s = v.Pred(-1)
+			if s != -1 {
+				t.Errorf("%s: succ (-1) should have been -1 but was %v", name, s)
+			}
+		})
 	}
-	for name := range structsToTest {
-		v := structsToTest[name]
-		v.Init(1000, false)
-		var s = -1
 
-		v.Insert(1)
-
-		s = v.Succ(0)
-		if s != 1 {
-			t.Errorf("%s: succ should have been 1 but was %v", name, s)
-		}
-		s = v.Succ(1)
-		if s != -1 {
-			t.Errorf("%s: succ should have been -1 but was %v", name, s)
-		}
-		s = v.Pred(0)
-		if s != -1 {
-			t.Errorf("%s: pred should have been -1 but was %v", name, s)
-		}
-		s = v.Pred(3)
-		if s != 1 {
-			t.Errorf("%s: pred should have been 1 but was %v", name, s)
-		}
-
-		v.Insert(4)
-		v.Insert(3)
-		v.Insert(100)
-
-		if !v.Member(4) {
-			t.Errorf("%s: 4 should have been a member", name)
-		}
-		if v.Member(5) {
-			t.Errorf("%s: 5 shouldn't have been a member", name)
-		}
-
-		if v.Max() != 100 {
-			t.Errorf("%s: max should have been %d but was %d", name, 100, v.Max())
-		}
-		if v.Min() != 1 {
-			t.Errorf("%s: min should have been %d but was %d", name, 1, v.Min())
-		}
-
-		v.Delete(1)
-		if v.Member(1) {
-			t.Errorf("%s: 1 shouldn't have been a member", name)
-		}
-
-		s = v.Succ(0)
-		if s != 3 {
-			t.Errorf("%s: succ should have been 3 but was %v", name, s)
-		}
-		s = v.Succ(4)
-		if s != 100 {
-			t.Errorf("%s: succ should have been 100 but was %v", name, s)
-		}
-		s = v.Pred(3)
-		if s != -1 {
-			t.Errorf("%s: pred should have been -1 but was %v", name, s)
-		}
-		s = v.Pred(4)
-		if s != 3 {
-			t.Errorf("%s: pred should have been 3 but was %v", name, s)
-		}
-
-		v.Delete(3)
-		v.Delete(4)
-		v.Delete(100)
-
-		s = v.Succ(-1)
-		if s != -1 {
-			t.Errorf("%s: succ (-1) should have been -1 but was %v", name, s)
-		}
-		s = v.Pred(-1)
-		if s != -1 {
-			t.Errorf("%s: succ (-1) should have been -1 but was %v", name, s)
-		}
-	}
-	u := 10_000
+	u := 32
 	rng := rand.Perm(u)
 	ins := rng[:int(float64(len(rng))*0.7)]
 	del := ins[len(ins)/4 : len(ins)*3/4]
-	for name := range structsToTest {
-		var v vEB.PrioQ = structsToTest[name]
-		PrioQInitTask(v, u, true)
-		PrioQLoadTask(v, rng, ins, del)
+	for _, alg := range algosTst {
+		name := alg.name
+		v := alg.gen()
+		t.Run(fmt.Sprintf("%v_%d_load", name, u), func(t *testing.T) {
+			PrioQInitTask(v, u, true)
+			PrioQLoadTask(v, rng, ins, del)
+		})
+	}
+
+	u = 10_000
+	rng = rand.Perm(u)
+	ins = rng[:int(float64(len(rng))*0.7)]
+	del = ins[len(ins)/4 : len(ins)*3/4]
+	for _, alg := range algosTst {
+		name := alg.name
+		v := alg.gen()
+		t.Run(fmt.Sprintf("%v_%d_load", name, u), func(t *testing.T) {
+			PrioQInitTask(v, u, true)
+			PrioQLoadTask(v, rng, ins, del)
+		})
 	}
 
 	// Do LoadTest and compare results
 	rems := make(map[string][]int)
-	for name := range structsToTest {
+	for _, alg := range algosTst {
+		name := alg.name
+		v := alg.gen()
 		rem := make([]int, 0, len(ins))
-		var v vEB.PrioQ = structsToTest[name]
 		var x int
 		for {
 			x = v.Succ(-1)

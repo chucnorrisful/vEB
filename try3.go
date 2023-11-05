@@ -1,7 +1,6 @@
 package vEB
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -127,9 +126,6 @@ func (v *Try3) Delete(x int) {
 		v.min = x
 	}
 	xHi, xLo := v.high(x), v.low(x)
-	if xHi > 100000000 {
-		fmt.Println("lol")
-	}
 	(v.local[xHi]).Delete(int(xLo))
 	if (v.local[xHi]).min < 0 {
 		v.global.Delete(int(xHi))
