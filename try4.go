@@ -6,12 +6,16 @@ import (
 )
 
 type Try4 struct {
-	global   *Try4
-	local    []*Try4
-	u, q, m  int
-	q_       int //log2(q)
-	min, max int
+	global     *Try4
+	local      []*Try4
+	globalLeaf *BitsPrioQ
+	localLeaf  []*BitsPrioQ
+	u, q, m    int
+	q_         int //log2(q)
+	min, max   int
 }
+
+const BIT_CUTOFF = 64
 
 func (v *Try4) Init(u int, fullInit bool) {
 	v.u = 1 << int(math.Ceil(math.Log2(float64(u))))
@@ -20,7 +24,7 @@ func (v *Try4) Init(u int, fullInit bool) {
 	v.q = v.u / v.m // == u/m
 	v.min, v.max = -1, -1
 
-	if u > 2 {
+	if u > BIT_CUTOFF { // todo: test where cutoff?
 		v.global = &Try4{}
 		v.global.Init(v.m, fullInit)
 
@@ -29,6 +33,16 @@ func (v *Try4) Init(u int, fullInit bool) {
 			a := &Try4{}
 			a.Init(v.q, fullInit)
 			v.local[i] = a
+		}
+	} else if u > 2 {
+		v.globalLeaf = &BitsPrioQ{}
+		v.globalLeaf.Init(v.m, fullInit)
+
+		v.localLeaf = make([]*BitsPrioQ, v.m)
+		for i := range v.localLeaf {
+			a := &BitsPrioQ{}
+			a.Init(v.q, fullInit)
+			v.localLeaf[i] = a
 		}
 	}
 }

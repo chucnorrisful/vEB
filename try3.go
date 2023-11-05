@@ -13,8 +13,6 @@ type Try3 struct {
 	min, max int
 }
 
-const MEMBER3 = false
-
 func (v *Try3) Init(u int, fullInit bool) {
 	v.u = 1 << int(math.Ceil(math.Log2(float64(u))))
 	v.m = 1 << int(math.Floor(math.Log2(math.Sqrt(float64(v.u)))))
@@ -83,7 +81,27 @@ func (v *Try3) Succ(x int) int {
 	return gloSucc*v.q + (v.local[gloSucc]).min
 }
 func (v *Try3) Pred(x int) int {
-	// todo:
+	if x == -1 {
+		return v.max
+	}
+
+	if v.u == 2 {
+		if x == 1 && v.min == 0 {
+			return 0
+		}
+		return -1
+	}
+	xHi := v.high(x)
+	if v.local[xHi].min < x && v.local[xHi].min > -1 {
+		return int(xHi)*v.q + v.local[xHi].Pred(int(v.low(x)))
+	}
+	gloPred := v.global.Pred(int(xHi))
+	if gloPred >= 0 {
+		return gloPred*v.q + v.local[gloPred].max
+	}
+	if v.min >= 0 && v.min < x {
+		return v.min
+	}
 	return -1
 }
 func (v *Try3) Delete(x int) {
@@ -136,37 +154,7 @@ func (v *Try3) Max() int {
 	return v.max
 }
 func (v *Try3) Member(x int) bool {
-	if MEMBER3 {
-		return v.Succ(x-1) == x
-	}
-
-	if v.min < 0 {
-		return false
-	}
-	if x < v.min {
-		return false
-	}
-	if x > v.max {
-		return false
-	}
-	if x == v.min {
-		return true
-	}
-	if x == v.max {
-		return true
-	}
-	if v.u == 2 {
-		// as above checked, x is eighter min or max, and thus is a member
-		return true
-	}
-
-	xHi := v.high(x)
-
-	if !v.global.Member(int(xHi)) {
-		return false
-	}
-
-	return (v.local[xHi]).Member(int(v.low(x)))
+	return v.Succ(x-1) == x
 }
 
 func (v *Try3) high(x int) uint64 {

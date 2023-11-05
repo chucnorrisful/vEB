@@ -131,6 +131,9 @@ func (v *Try1) Succ(x int) int {
 	return int(hiSucc)*v.q + (*v.local[hiSucc]).Min()
 }
 func (v *Try1) Pred(x int) int {
+	if x < 0 {
+		return v.Max()
+	}
 	xHi, xLo := v.split(x)
 
 	loPred := (*v.local[xHi]).Pred(int(xLo))
@@ -143,7 +146,7 @@ func (v *Try1) Pred(x int) int {
 		return -1
 	}
 
-	return int(xHi)*v.q + (*v.local[hiPred]).Max()
+	return hiPred*v.q + (*v.local[hiPred]).Max()
 }
 func (v *Try1) Delete(x int) {
 	xHi, xLo := v.split(x)

@@ -83,7 +83,27 @@ func (v *Try2) Succ(x int) int {
 	return gloSucc*v.q + (*v.local[gloSucc]).Min()
 }
 func (v *Try2) Pred(x int) int {
-	// todo:
+	if x == -1 {
+		return v.max
+	}
+
+	if v.u == 2 {
+		if x == 1 && v.min == 0 {
+			return 0
+		}
+		return -1
+	}
+	xHi, xLo := v.split(x)
+	if (*v.local[xHi]).Min() < x && (*v.local[xHi]).Min() > -1 {
+		return int(xHi)*v.q + (*v.local[xHi]).Pred(int(xLo))
+	}
+	gloPred := v.global.Pred(int(xHi))
+	if gloPred >= 0 {
+		return gloPred*v.q + (*v.local[gloPred]).Max()
+	}
+	if v.min >= 0 && v.min < x {
+		return v.min
+	}
 	return -1
 }
 func (v *Try2) Delete(x int) {

@@ -24,7 +24,7 @@ func TestPrioQ(t *testing.T) {
 		"v1":   &vEB.V1{},
 	}
 	for name := range structsToTest {
-		var v vEB.PrioQ = structsToTest[name]
+		v := structsToTest[name]
 		v.Init(1000, false)
 		var s = -1
 
@@ -37,6 +37,14 @@ func TestPrioQ(t *testing.T) {
 		s = v.Succ(1)
 		if s != -1 {
 			t.Errorf("%s: succ should have been -1 but was %v", name, s)
+		}
+		s = v.Pred(0)
+		if s != -1 {
+			t.Errorf("%s: pred should have been -1 but was %v", name, s)
+		}
+		s = v.Pred(3)
+		if s != 1 {
+			t.Errorf("%s: pred should have been 1 but was %v", name, s)
 		}
 
 		v.Insert(4)
@@ -70,12 +78,24 @@ func TestPrioQ(t *testing.T) {
 		if s != 100 {
 			t.Errorf("%s: succ should have been 100 but was %v", name, s)
 		}
+		s = v.Pred(3)
+		if s != -1 {
+			t.Errorf("%s: pred should have been -1 but was %v", name, s)
+		}
+		s = v.Pred(4)
+		if s != 3 {
+			t.Errorf("%s: pred should have been 3 but was %v", name, s)
+		}
 
 		v.Delete(3)
 		v.Delete(4)
 		v.Delete(100)
 
 		s = v.Succ(-1)
+		if s != -1 {
+			t.Errorf("%s: succ (-1) should have been -1 but was %v", name, s)
+		}
+		s = v.Pred(-1)
 		if s != -1 {
 			t.Errorf("%s: succ (-1) should have been -1 but was %v", name, s)
 		}

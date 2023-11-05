@@ -197,6 +197,38 @@ func (v *V0) Max() int {
 
 // Todo: Predecessor
 func (v *V0) Pred(x int) int {
+	if x == -1 {
+		return v.max
+	}
+
+	if v.u == 2 {
+		if x == 1 && v.min == 0 {
+			return 0
+		}
+		return -1
+	}
+	xHi := v.high(x)
+	if v.global[xHi] {
+		if v.local[xHi].min < x && v.local[xHi].min > -1 {
+			return int(xHi)*v.q + v.local[xHi].Pred(int(v.low(x)))
+		}
+	}
+
+	//global.pred
+	gloPred := -1
+	for j := v.high(x) - 1; j >= 0; j-- {
+		if v.global[j] {
+			gloPred = j
+			break
+		}
+	}
+
+	if gloPred >= 0 {
+		return gloPred*v.q + v.local[gloPred].max
+	}
+	if v.min >= 0 && v.min < x {
+		return v.min
+	}
 	return -1
 }
 

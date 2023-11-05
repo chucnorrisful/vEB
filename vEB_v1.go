@@ -118,43 +118,41 @@ func (v *V1) Succ(x int) int {
 }
 
 func (v *V1) Pred(x int) int {
-	//rekursion end
-	if v.u == 2 {
-		if x == 1 && v.min == 0 {
-			return 0
-		} else {
-			//todo: check if at recursive call a detection is necessary
-			return -1
-		}
-	}
-
-	if v.max != -1 && x > v.max {
+	if x == -1 {
 		return v.max
 	}
 
-	//if x > local min, search in local substructure recursively
-	l := -1
-	hi, lo := high(x, v.q), low(x, v.q)
-	if v.global != nil && v.global.Pred(hi+1) == hi {
-		l = v.local[hi].min
+	if v.u == 2 {
+		if x == 1 && v.min == 0 {
+			return 0
+		}
+		return -1
 	}
-
-	if l != -1 && lo > l {
-		return hi*v.q + v.local[hi].Pred(lo)
-	}
-
-	i := -1
-	if v.global != nil {
-		i = v.global.Pred(hi)
-	}
-
-	//if no global predecessor exists, x is smaller than every member
-	if i == -1 {
+	if v.global == nil {
+		if v.min < x {
+			return v.min
+		}
 		return -1
 	}
 
-	//if global predecessor exists, return its max
-	return i*v.q + v.local[i].max
+	xHi, xLo := high(x, v.q), low(x, v.q)
+
+	if v.global.Member(xHi) {
+		if v.local[xHi].min < x && v.local[xHi].min > -1 {
+			return int(xHi)*v.q + v.local[xHi].Pred(xLo)
+		}
+	}
+
+	//global.pred
+	gloPred := v.global.Pred(xHi)
+
+	if gloPred >= 0 {
+		return gloPred*v.q + v.local[gloPred].max
+	}
+	if v.min >= 0 && v.min < x {
+		return v.min
+	}
+	return -1
 }
 
 func (v *V1) Delete(x int) {
